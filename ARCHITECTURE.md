@@ -40,13 +40,15 @@ storage). The app code is stock Twenty plus a small, documented set of additive 
 - R2 bucket: **`orbitor-files`**, Cloudflare account `5aec49dc270dd7fd739f1e8e72f0030d`
   → S3 endpoint `https://5aec49dc270dd7fd739f1e8e72f0030d.r2.cloudflarestorage.com`
 - GitHub: `github.com/zzeenniitthh/orbitor`, deploys from **`main`**.
+- **Status: live ✓** — all four Railway services are deployed, **co-located in one region**, and
+  healthy (`/healthz` → 200). Frontend is live on Pages; sign-in and workspace creation work.
 
-## 3. Critical operational rules (learned the hard way)
-1. **All four Railway services MUST be in the same region.** Workspace creation runs ~840
-   sequential DB queries. Co-located (same region + private network) each query is ~1ms and
-   setup finishes in seconds; cross-region it's ~140ms/query → ~3 min → the browser times out
-   with **"Workspace creation failed."** Set Postgres, Redis, server, and worker all to the
-   same region (e.g. EU West / Amsterdam).
+## 3. Operational rules — current setup is correct; keep it this way
+1. **All four Railway services stay in the same region (configured ✓).** Workspace creation runs
+   ~840 sequential DB queries; co-located (same region + private network) each is ~1ms and setup
+   finishes in seconds. ⚠️ Do **not** move a service to a different region — cross-region jumps to
+   ~140ms/query, so setup takes minutes and the browser times out. (This was the original
+   "Workspace creation failed" issue; it's resolved now that they're co-located.)
 2. **Cloudflare Pages "Build output directory" must be `packages/twenty-front/build`.** If left
    blank it uploads the whole repo (incl. `node_modules`, 400k+ files) and fails the
    20,000-file limit.
