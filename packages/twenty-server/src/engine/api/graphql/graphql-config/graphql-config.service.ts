@@ -81,6 +81,12 @@ export class GraphQLConfigService implements GqlOptionsFactory<
 
     const config: YogaDriverConfig = {
       autoSchemaFile: true,
+      // Enable graphql-ws WebSocket subscriptions (real-time push). The AI agent chat
+      // streams its reply via an @Subscription resolver (onAgentChatEvent) over Redis
+      // pub/sub; without this the /graphql WebSocket upgrade is refused and the chat
+      // hangs with no response. The YogaDriver auto-attaches the WS server to the HTTP
+      // server, so no main.ts change is needed.
+      subscriptions: true,
       include: [CoreEngineModule],
       resolverSchemaScope: 'core',
       buildSchemaOptions: {},
