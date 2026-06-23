@@ -17,7 +17,7 @@ This guide is written to be followed click-by-click. You need **two accounts**:
 **1) Cloudflare R2 → 2) Railway → 3) Cloudflare Pages → 4) connect the two URLs → 5) sign in.**
 
 Everything in code is already done and pushed to GitHub (`zzeenniitthh/orbitor`, branch
-`deploy/railway-cloudflare`). You only click in dashboards and copy values.
+`main`). You only click in dashboards and copy values.
 
 > 💡 Keep a scratch note open. You'll collect **6 values** as you go:
 > `APP_SECRET`, `R2 Access Key ID`, `R2 Secret Access Key`, `Railway server URL`,
@@ -64,7 +64,7 @@ That's all from Cloudflare for now. (Your S3 endpoint is already known — see t
 
 ### 2b. Point the server at the right branch
 In the service → **Settings**:
-- **Source / Branch:** set to `deploy/railway-cloudflare`.
+- **Source / Branch:** `main` (the default — everything is on main).
 - ⚠️ **Root Directory: LEAVE IT EMPTY (the repo root).** Do **not** set it to
   `packages/twenty-server` — our Docker build needs the whole repo as its context,
   and the included `railway.json` already tells Railway to build from
@@ -153,7 +153,7 @@ steps 2f and Part 4 — that's expected.
 The worker runs background jobs. It's the same image with a different start command.
 1. Project canvas → **Create / + New** → **GitHub Repo** → pick `zzeenniitthh/orbitor` again.
 2. Open the new service → **Settings**:
-   - Branch: `deploy/railway-cloudflare`
+   - Branch: `main`
    - **Root Directory: LEAVE IT EMPTY** (same reason as the server — `railway.json`
      already forces the Dockerfile build).
    - **Deploy → Custom Start Command:**
@@ -187,9 +187,15 @@ build itself can take ~10–15 min the first time.
 
 ## Part 3 — Cloudflare Pages (the website)
 
+> ⚠️ **Use the *Pages* flow, not Workers.** In Workers & Pages → Create there are two
+> tabs: **Workers** and **Pages**. The **Workers** tab shows a "Deploy command:
+> `npx wrangler deploy`" — that's the WRONG one for our static site. Click the
+> **Pages** tab, which instead asks for a **Build output directory** and a
+> **Production branch** dropdown.
+
 1. **dash.cloudflare.com** → **Workers & Pages** → **Create** → **Pages** tab →
    **Connect to Git** → pick `zzeenniitthh/orbitor`.
-2. **Production branch:** `deploy/railway-cloudflare`.
+2. **Production branch:** `main`.
 3. **Build settings:**
    - **Framework preset:** `None`
    - **Build command:** paste exactly:
@@ -202,7 +208,10 @@ build itself can take ~10–15 min the first time.
      ```
 4. **Environment variables** (expand "Environment variables (advanced)") → add one:
    - Name: `REACT_APP_SERVER_BASE_URL`
-   - Value: your **Railway server URL** from step 2f (e.g. `https://server-production-xxxx.up.railway.app`)
+   - Value: your **Railway server URL** (from step 2f). For this deploy it is:
+     ```
+     https://orbitor-production.up.railway.app
+     ```
 5. Click **Save and Deploy**. The first build takes a while (it builds the whole app).
 6. When done, Cloudflare gives you a URL like `https://orbitor-xxx.pages.dev`.
    - Save it as your **Cloudflare Pages URL**.
