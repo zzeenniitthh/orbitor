@@ -19,7 +19,7 @@ rawDataSource
       'create extension "uuid-ossp"',
     );
 
-    // Managed Postgres (e.g. Supabase) pre-installs uuid-ossp in a non-public schema,
+    // Some managed Postgres providers pre-install uuid-ossp in a non-public schema,
     // leaving public.uuid_generate_v4() — which per-workspace table DDL depends on —
     // undefined. Provide it (no-op when it already exists), backed by core gen_random_uuid().
     await performQuery(
@@ -33,7 +33,8 @@ END $$;`,
     );
 
     // WITH SCHEMA public so the unaccent_immutable wrapper below (which references
-    // public.unaccent) resolves on managed Postgres where extensions may default elsewhere.
+    // public.unaccent) resolves on managed Postgres where extensions may default to
+    // another schema.
     await performQuery(
       'CREATE EXTENSION IF NOT EXISTS "unaccent" WITH SCHEMA public',
       'create extension "unaccent"',

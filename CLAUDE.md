@@ -2,9 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Deploying or need the big picture?** See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for how
+> Orbitor is hosted (Railway + Cloudflare), the repo structure, the build/deploy flow, env
+> vars, and what diverges from upstream Twenty. [`DEPLOY.md`](./DEPLOY.md) is the step-by-step
+> hosting runbook.
+
 ## Project Overview
 
-Twenty is an open-source CRM built with modern technologies in a monorepo structure. The codebase is organized as an Nx workspace with multiple packages.
+Twenty is an open-source CRM built with modern technologies in a monorepo structure. The codebase is organized as an Nx workspace with multiple packages. Orbitor is a fork of Twenty (see [`ARCHITECTURE.md`](./ARCHITECTURE.md)).
 
 ## Key Commands
 

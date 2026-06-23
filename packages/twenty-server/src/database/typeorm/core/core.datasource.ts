@@ -78,7 +78,7 @@ export const typeORMCoreModuleOptions: TypeOrmModuleOptions = {
       : undefined,
   extra: {
     // Cap the core pool so it honors PG_POOL_MAX_CONNECTIONS. Needed on connection
-    // poolers with a low client limit (e.g. Supabase session pooler, pool_size 15)
+    // poolers with a low client limit (e.g. a session pooler capped at ~15 clients)
     // where the default of 10 per pool × (server + worker) exhausts the pooler.
     max: Number(process.env.PG_POOL_MAX_CONNECTIONS ?? 10),
     query_timeout: Number(process.env.PG_DATABASE_PRIMARY_TIMEOUT_MS ?? 10000),
