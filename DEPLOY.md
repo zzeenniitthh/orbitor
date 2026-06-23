@@ -111,7 +111,43 @@ STORAGE_S3_SECRET_ACCESS_KEY=<<PASTE R2 Secret Access Key>>
 IS_WORKSPACE_DEMO_DATA_ENABLED=false
 ```
 
-Click **Save**. (We fix the two `PLACEHOLDER` URLs in steps 2f and Part 4.)
+**Where each value comes from.** Most lines are already correct — you only fill **5**:
+
+| Line(s) | What to do |
+|---|---|
+| `PG_DATABASE_URL`, `REDIS_URL` | **Leave EXACTLY as written** (`${{Postgres.DATABASE_URL}}` / `${{Redis.REDIS_URL}}`). Railway auto-fills them from the Postgres + Redis you added in 2c. Do not change them. |
+| `STORAGE_S3_ENDPOINT` | Already filled in for your account — leave it. |
+| `NODE_PORT`, `STORAGE_TYPE`, `STORAGE_S3_NAME`, `STORAGE_S3_REGION`, `IS_WORKSPACE_DEMO_DATA_ENABLED` | Already correct — leave them. |
+
+Now the **5 values you fill**:
+
+**① `APP_SECRET`** — a random secret you make once.
+- Open the **Terminal** app (press `⌘ + Space`, type `Terminal`, hit Enter).
+- Paste this and press Enter:
+  ```
+  openssl rand -base64 32
+  ```
+- Copy the line it prints (looks like `k8Jx2...=`) → paste it as the `APP_SECRET` value.
+
+**② `STORAGE_S3_ACCESS_KEY_ID`** and **③ `STORAGE_S3_SECRET_ACCESS_KEY`** — from Cloudflare R2.
+- Go to **dash.cloudflare.com** → **R2** in the left sidebar.
+- (If you haven't made the bucket yet: **Create bucket**, name it `orbitor-files`.)
+- Top-right of the R2 page: click **`{ }` API** → **Manage API Tokens** → **Create API Token**.
+- Set **Permissions = Object Read & Write** → **Create API Token**.
+- Cloudflare now shows them **once** (you can't see the secret again later — copy now):
+  - **Access Key ID** → paste as `STORAGE_S3_ACCESS_KEY_ID`
+  - **Secret Access Key** → paste as `STORAGE_S3_SECRET_ACCESS_KEY`
+
+**④ `SERVER_URL`** — the backend's own address. **You don't have it yet.**
+- Leave the placeholder for now. Right after you finish **step 2f** (Generate Domain),
+  come back here and replace it with the URL Railway gives you.
+
+**⑤ `FRONTEND_URL`** — the website's address. **You don't have it yet either.**
+- Leave the placeholder for now. You'll fill it in **Part 4**, after the Cloudflare
+  Pages site exists.
+
+Click **Save** / **Deploy Changes**. The two placeholder URLs (④, ⑤) stay as-is until
+steps 2f and Part 4 — that's expected.
 
 ### 2e. Add the worker service (same repo, one extra setting)
 The worker runs background jobs. It's the same image with a different start command.
