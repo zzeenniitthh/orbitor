@@ -91,6 +91,18 @@ In the project canvas (the board view):
 You don't copy anything from these — Railway wires them in automatically via the
 `${{Postgres.DATABASE_URL}}` and `${{Redis.REDIS_URL}}` references in the variables below.
 
+> 🚨 **CRITICAL — all four services MUST be in the SAME region.** Workspace creation
+> runs ~840 sequential database queries. Co-located (same region, private network) each
+> query is ~1ms and setup finishes in seconds. If the server and Postgres are in
+> **different** regions, each query is ~140ms → setup takes ~3 minutes and the browser
+> times out with **"Workspace creation failed."**
+>
+> Railway often defaults new databases to a different region than your service. After
+> adding them, check **each** service → **Settings → Region** and set **Postgres, Redis,
+> the server, and the worker all to the same region** (e.g. EU West / Amsterdam).
+> Changing a database's region re-provisions it (wipes data) — fine before you have real
+> users. The server re-initializes the empty database automatically on its next boot.
+
 ### 2d. Set the server's variables
 Open the **server** service → **Variables** tab → click **Raw Editor** →
 paste this whole block, then replace the 4 `<<PASTE …>>` placeholders:
