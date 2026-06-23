@@ -100,8 +100,8 @@ PG_DATABASE_URL=${{Postgres.DATABASE_URL}}
 REDIS_URL=${{Redis.REDIS_URL}}
 APP_SECRET=<<PASTE your openssl secret>>
 NODE_PORT=3000
-SERVER_URL=https://PLACEHOLDER-fill-in-step-2f
-FRONTEND_URL=https://PLACEHOLDER-fill-in-part-4
+SERVER_URL=https://orbitor-production.up.railway.app
+FRONTEND_URL=https://orbitor.pages.dev
 STORAGE_TYPE=s3
 STORAGE_S3_NAME=orbitor-files
 STORAGE_S3_ENDPOINT=https://5aec49dc270dd7fd739f1e8e72f0030d.r2.cloudflarestorage.com
@@ -138,16 +138,19 @@ Now the **5 values you fill**:
   - **Access Key ID** → paste as `STORAGE_S3_ACCESS_KEY_ID`
   - **Secret Access Key** → paste as `STORAGE_S3_SECRET_ACCESS_KEY`
 
-**④ `SERVER_URL`** — the backend's own address. **You don't have it yet.**
-- Leave the placeholder for now. Right after you finish **step 2f** (Generate Domain),
-  come back here and replace it with the URL Railway gives you.
+**④ `SERVER_URL`** — the backend's own address.
+- This is the domain from **step 2f** (Generate Domain): `https://orbitor-production.up.railway.app`.
+- ⚠️ It **must be a real, valid URL** — do NOT leave a fake `PLACEHOLDER` value. Twenty
+  refuses to boot (and crash-loops) if `SERVER_URL` isn't a valid web address.
 
-**⑤ `FRONTEND_URL`** — the website's address. **You don't have it yet either.**
-- Leave the placeholder for now. You'll fill it in **Part 4**, after the Cloudflare
-  Pages site exists.
+**⑤ `FRONTEND_URL`** — the website's address (Cloudflare Pages). **You don't have it yet,**
+but Twenty still needs a **valid** URL here to start.
+- Set it to `https://orbitor.pages.dev` for now — a valid temporary value (and likely the
+  real one, since you'll name the Pages project `orbitor`). You'll confirm/adjust it in
+  **Part 4** once Pages is live.
+- ⚠️ Same rule: it must be a valid URL, never a `PLACEHOLDER` string, or the server crashes.
 
-Click **Save** / **Deploy Changes**. The two placeholder URLs (④, ⑤) stay as-is until
-steps 2f and Part 4 — that's expected.
+Click **Save** / **Deploy Changes**. The service redeploys and should boot cleanly.
 
 ### 2e. Add the worker service (same repo, one extra setting)
 The worker runs background jobs. It's the same image with a different start command.
