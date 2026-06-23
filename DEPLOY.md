@@ -62,18 +62,26 @@ That's all from Cloudflare for now. (Your S3 endpoint is already known — see t
    "Configure GitHub App" and give Railway access to that repo.)
 3. Railway creates one service. Open it. We'll configure it as the **server**.
 
-### 2b. Point the server at the right Dockerfile + branch
+### 2b. Point the server at the right branch
 In the service → **Settings**:
 - **Source / Branch:** set to `deploy/railway-cloudflare`.
-- **Build → Builder:** `Dockerfile`.
-- **Build → Dockerfile Path:** paste exactly:
-  ```
-  packages/twenty-docker/server/Dockerfile
-  ```
+- ⚠️ **Root Directory: LEAVE IT EMPTY (the repo root).** Do **not** set it to
+  `packages/twenty-server` — our Docker build needs the whole repo as its context,
+  and the included `railway.json` already tells Railway to build from
+  `packages/twenty-docker/server/Dockerfile`. (If Railway ever suggests "set a root
+  directory to reduce build scope," ignore it — that advice is for non-Docker builds.)
+- The **builder is already forced to Dockerfile** by `railway.json` in the repo, so
+  you do NOT need to set Builder / Dockerfile Path by hand. (If you want to verify:
+  Settings → Build should show Dockerfile, path `packages/twenty-docker/server/Dockerfile`.)
 - (Optional, recommended) **Deploy → Healthcheck Path:** `/healthz`
 - **Region:** pick **EU West (Amsterdam)** if offered (closest to Israel; keep all
   services + databases in the same region).
 - Rename the service to **`server`** (top of the page) so it's easy to tell apart.
+
+> 💥 **If your first deploy already failed** with a message about Railpack / "3.3 GiB
+> of dependencies" / "killed during image assembly": that's Railway ignoring the
+> Dockerfile. After this `railway.json` is in the repo, open the service →
+> **Deployments → Redeploy** (or push triggers it). Make sure Root Directory is empty.
 
 ### 2c. Add Postgres and Redis (one click each)
 In the project canvas (the board view):
@@ -110,8 +118,8 @@ The worker runs background jobs. It's the same image with a different start comm
 1. Project canvas → **Create / + New** → **GitHub Repo** → pick `zzeenniitthh/orbitor` again.
 2. Open the new service → **Settings**:
    - Branch: `deploy/railway-cloudflare`
-   - Build → Builder: `Dockerfile`
-   - Build → Dockerfile Path: `packages/twenty-docker/server/Dockerfile`
+   - **Root Directory: LEAVE IT EMPTY** (same reason as the server — `railway.json`
+     already forces the Dockerfile build).
    - **Deploy → Custom Start Command:**
      ```
      yarn worker:prod
