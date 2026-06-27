@@ -1664,21 +1664,6 @@ export class ConfigVariables {
   @IsOptional()
   ENTERPRISE_API_URL: string = 'https://twenty.com/api/enterprise';
 
-  // Orbitor fork: PEM-encoded RS256 public key (SPKI) used to additionally
-  // trust enterprise validity/key JWTs we sign ourselves, in all environments.
-  // Lets a self-hosted instance unlock enterprise features without phoning home
-  // to twenty.com. The committed enterprise public-key constant is left intact
-  // for clean upstream merges.
-  @ConfigVariablesMetadata({
-    group: ConfigVariablesGroup.SERVER_CONFIG,
-    isSensitive: true,
-    description:
-      'Orbitor self-signed license public key (PEM/SPKI). When set, enterprise license JWTs signed by the matching private key are trusted in all environments.',
-    type: ConfigVariableType.STRING,
-  })
-  @IsOptional()
-  ORBITOR_LICENSE_PUBLIC_KEY: string;
-
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.ADVANCED_SETTINGS,
     description: 'Health monitoring time window in minutes',
