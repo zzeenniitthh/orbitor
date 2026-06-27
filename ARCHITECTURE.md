@@ -2,7 +2,7 @@
 
 > Read this first if you're an agent or developer new to this repo. It explains what
 > Orbitor is, how it's hosted, how it builds/deploys, and what differs from upstream Twenty.
-> For the click-by-click hosting runbook, see [`DEPLOY.md`](../../DEPLOY.md).
+> For the click-by-click hosting runbook, see [`DEPLOY.md`](./DEPLOY.md).
 
 ## 1. What Orbitor is
 Orbitor is a fork of **Twenty CRM** (an Nx + Yarn 4 monorepo). It is run as a hosted product
@@ -139,18 +139,9 @@ merges stay clean): `twenty-website`, `twenty-website-redone`, `twenty-docs`, `t
 gitignored and points at local Postgres/storage for development.
 
 ## 7. Shipping a change
-> Full local-dev / staging / release runbook: [`DEVELOPMENT.md`](../DEVELOPMENT.md).
-
-**Environments: `main` is production — never test on it.** Changes flow
-**local (local DB) → staging (separate Railway env + Cloudflare Pages preview) → production**:
-- **Local:** `yarn start` against local Postgres/Redis; run the test gate (typecheck + lint +
-  tests) before promoting.
-- **Staging:** push the `staging` branch → a separate Railway `staging` environment (its own
-  Postgres/Redis/R2) + a CF Pages preview deploy verify prod-only behavior (env wiring, license
-  activation, R2, SSE) with throwaway data.
-- **Production:** merging to `main` → Railway (server + worker) and Cloudflare Pages auto-build and
-  deploy. Changing a Railway env var triggers a **fast redeploy** (reuses the built image, no
-  rebuild); code changes trigger a full build.
+- Push to `main` → Railway (server + worker) and Cloudflare Pages both auto-build and deploy.
+- Changing an env var on Railway triggers a **fast redeploy** (reuses the built image, no
+  rebuild) — so config fixes are quick; code changes trigger a full build.
 
 ## 8. What diverges from upstream Twenty (keep this list current)
 **Added deploy files:** `railway.json`, `packages/twenty-docker/server/Dockerfile`,
@@ -168,35 +159,7 @@ one provider):**
   `.../workspace/services/workspace.service.ts` — `IS_WORKSPACE_DEMO_DATA_ENABLED` flag that
   gates demo-data prefill on workspace creation.
 
-## 9. Feature gating, licensing & AI configuration
-> Detail + the unlock plan: [`README.md`](./README.md), [`RESEARCH.md`](./RESEARCH.md), [`PLAN.md`](./PLAN.md) (this folder).
-
-**Billing is OFF on this fork (`IS_BILLING_ENABLED=false`, Twenty's default), and that already
-unlocks most "paid" gates** — when billing is off Twenty's gates *grant* access:
-- `billing.service.ts:48-52` `hasEntitlement()` → `true` → **SSO + Custom Domain unlocked**.
-- `billing-usage.service.ts:311-314` `hasAvailableCredits()` → `true` → **AI is never blocked by
-  credits/subscription**.
-
-**Still gated** (do not assume these work just because billing is off):
-- **RLS, Audit Logs, >5 workspaces, JWT signing-key rotation** — gated by
-  `enterprisePlanService.isValid()` (`enterprise/services/enterprise-plan.service.ts`), a real
-  RS256 **validity-token** check. In production it only trusts twenty.com's embedded public key
-  (`enterprise-public-key.constant.ts`), so these stay locked until we install our own
-  self-signed token (see the plan folder). The `@license Enterprise` header on ~239 files is
-  documentary only — no build/runtime enforcement.
-- **Feature-flag management** — `client-config.service.ts:219-222`:
-  `canManageFeatureFlags = NODE_ENV===development || IS_BILLING_ENABLED` (so off in prod).
-
-**AI agent chat.** Provider keys are **instance-wide** in the `AI_PROVIDERS` config (Admin Panel
-`addAiProvider`, `admin-panel.resolver.ts:511-528`), merged with a committed catalog
-(`ai-models/ai-providers.json`, which already includes Google/Gemini as `"google"`). A model is
-only usable once registered (`ai-model-registry.service.ts:91-135`: needs `npm` + `models` +
-`isProviderConfigured`) **and** allowed for the workspace (`smartModel`/`fastModel`). Simplest way
-to enable a provider: set its key config var (e.g. `GOOGLE_API_KEY`) so the catalog template
-resolves. Note: AI errors are currently mis-mapped to HTTP 500
-(`ai-graphql-api-exception-handler.util.ts:37-40`), which presents as a silent "nothing happens".
-
-## 10. Local development
+## 9. Local development
 ```
 bash packages/twenty-utils/setup-dev-env.sh   # starts Postgres + Redis, copies .env, inits DB
 yarn start                                     # front + server + worker
