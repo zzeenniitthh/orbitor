@@ -6,6 +6,7 @@ import { SupportDriver } from 'src/engine/core-modules/twenty-config/interfaces/
 import { CaptchaDriverType } from 'src/engine/core-modules/captcha/interfaces';
 import { ClientConfigService } from 'src/engine/core-modules/client-config/services/client-config.service';
 import { DomainServerConfigService } from 'src/engine/core-modules/domain/domain-server-config/services/domain-server-config.service';
+import { EnterprisePlanService } from 'src/engine/core-modules/enterprise/services/enterprise-plan.service';
 import { PUBLIC_FEATURE_FLAGS } from 'src/engine/core-modules/feature-flag/constants/public-feature-flag.const';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { AiModelRegistryService } from 'src/engine/metadata-modules/ai/ai-models/services/ai-model-registry.service';
@@ -47,6 +48,12 @@ describe('ClientConfigService', () => {
           provide: MaintenanceModeService,
           useValue: {
             getMaintenanceMode: jest.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: EnterprisePlanService,
+          useValue: {
+            isValid: jest.fn().mockReturnValue(false),
           },
         },
       ],

@@ -13,6 +13,7 @@ import {
 } from 'src/engine/core-modules/client-config/client-config.entity';
 import { DomainServerConfigService } from 'src/engine/core-modules/domain/domain-server-config/services/domain-server-config.service';
 import { EmailingDomainDriver } from 'src/engine/core-modules/emailing-domain/drivers/types/emailing-domain-driver.type';
+import { EnterprisePlanService } from 'src/engine/core-modules/enterprise/services/enterprise-plan.service';
 import { PUBLIC_FEATURE_FLAGS } from 'src/engine/core-modules/feature-flag/constants/public-feature-flag.const';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import {
@@ -30,6 +31,7 @@ export class ClientConfigService {
     private domainServerConfigService: DomainServerConfigService,
     private aiModelRegistryService: AiModelRegistryService,
     private maintenanceModeService: MaintenanceModeService,
+    private enterprisePlanService: EnterprisePlanService,
   ) {}
 
   private isCloudflareIntegrationEnabled(): boolean {
@@ -219,7 +221,10 @@ export class ClientConfigService {
       canManageFeatureFlags:
         this.twentyConfigService.get('NODE_ENV') ===
           NodeEnvironment.DEVELOPMENT ||
-        this.twentyConfigService.get('IS_BILLING_ENABLED'),
+        this.twentyConfigService.get('IS_BILLING_ENABLED') ||
+        // Orbitor fork: a valid self-signed enterprise license also unlocks
+        // feature-flag management in the Settings UI.
+        this.enterprisePlanService.isValid(),
       publicFeatureFlags: PUBLIC_FEATURE_FLAGS,
       isMicrosoftMessagingEnabled: this.twentyConfigService.get(
         'MESSAGING_PROVIDER_MICROSOFT_ENABLED',
