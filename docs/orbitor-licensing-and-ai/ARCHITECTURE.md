@@ -139,9 +139,18 @@ merges stay clean): `twenty-website`, `twenty-website-redone`, `twenty-docs`, `t
 gitignored and points at local Postgres/storage for development.
 
 ## 7. Shipping a change
-- Push to `main` → Railway (server + worker) and Cloudflare Pages both auto-build and deploy.
-- Changing an env var on Railway triggers a **fast redeploy** (reuses the built image, no
-  rebuild) — so config fixes are quick; code changes trigger a full build.
+> Full local-dev / staging / release runbook: [`DEVELOPMENT.md`](../DEVELOPMENT.md).
+
+**Environments: `main` is production — never test on it.** Changes flow
+**local (local DB) → staging (separate Railway env + Cloudflare Pages preview) → production**:
+- **Local:** `yarn start` against local Postgres/Redis; run the test gate (typecheck + lint +
+  tests) before promoting.
+- **Staging:** push the `staging` branch → a separate Railway `staging` environment (its own
+  Postgres/Redis/R2) + a CF Pages preview deploy verify prod-only behavior (env wiring, license
+  activation, R2, SSE) with throwaway data.
+- **Production:** merging to `main` → Railway (server + worker) and Cloudflare Pages auto-build and
+  deploy. Changing a Railway env var triggers a **fast redeploy** (reuses the built image, no
+  rebuild); code changes trigger a full build.
 
 ## 8. What diverges from upstream Twenty (keep this list current)
 **Added deploy files:** `railway.json`, `packages/twenty-docker/server/Dockerfile`,

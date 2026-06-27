@@ -7,6 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > for how Orbitor is hosted (Railway + Cloudflare), the repo structure, the build/deploy flow, env
 > vars, and what diverges from upstream Twenty. That folder also holds the feature-gating research
 > and the licensing + AI-fix plan. [`DEPLOY.md`](./DEPLOY.md) is the step-by-step hosting runbook.
+> **Before changing code, read [`docs/DEVELOPMENT.md`](./docs/DEVELOPMENT.md)** — the local-dev /
+> staging / release workflow. Rule: develop+test locally (local DB) → verify on staging → only
+> then merge to `main` (which is production). Never test on `main`.
 
 ## Project Overview
 
