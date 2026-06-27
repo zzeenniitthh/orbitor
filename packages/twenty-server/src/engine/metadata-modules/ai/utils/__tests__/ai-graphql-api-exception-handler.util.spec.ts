@@ -18,7 +18,9 @@ const catchGraphqlError = (error: Error): BaseGraphQLError => {
 };
 
 describe('aiGraphqlApiExceptionHandler', () => {
-  it('maps API key configuration failures to INTERNAL_SERVER_ERROR with a subCode', () => {
+  // Orbitor: a missing/unconfigured AI provider is an admin-actionable config
+  // problem, surfaced to the user instead of a silent 500 (see RESEARCH.md §3).
+  it('maps API key configuration failures to BAD_USER_INPUT with a subCode', () => {
     const error = new AiException(
       'No AI models are available',
       AiExceptionCode.API_KEY_NOT_CONFIGURED,
@@ -26,7 +28,7 @@ describe('aiGraphqlApiExceptionHandler', () => {
 
     const graphqlError = catchGraphqlError(error);
 
-    expect(graphqlError.extensions.code).toBe(ErrorCode.INTERNAL_SERVER_ERROR);
+    expect(graphqlError.extensions.code).toBe(ErrorCode.BAD_USER_INPUT);
     expect(graphqlError.extensions.subCode).toBe(
       AiExceptionCode.API_KEY_NOT_CONFIGURED,
     );

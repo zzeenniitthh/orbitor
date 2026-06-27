@@ -521,7 +521,18 @@ export class AdminPanelResolver {
       ...this.twentyConfigService.get('AI_PROVIDERS'),
     };
 
-    customProviders[providerName] = providerConfig;
+    // A model only becomes usable if its provider has `npm` + a non-empty
+    // `models` array (see ai-model-registry.service.ts). When the user adds a
+    // known catalog provider (e.g. "google") supplying only an apiKey, inherit
+    // the catalog entry's npm/models/etc. so the provider actually registers
+    // instead of being silently skipped. User-supplied fields take precedence.
+    const catalogEntry =
+      this.defaultAiCatalogService.getDefaultAiCatalog()[providerName];
+
+    customProviders[providerName] = catalogEntry
+      ? { ...catalogEntry, ...providerConfig }
+      : providerConfig;
+
     await this.twentyConfigService.set('AI_PROVIDERS', customProviders);
 
     return true;
