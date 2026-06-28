@@ -523,13 +523,20 @@ export class AdminPanelResolver {
 
     // A model only becomes usable if its provider has `npm` + a non-empty
     // `models` array (see ai-model-registry.service.ts). When the user adds a
-    // known catalog provider (e.g. "google") supplying only an apiKey, inherit
-    // the catalog entry's npm/models/etc. so the provider actually registers
-    // instead of being silently skipped. User-supplied fields take precedence.
-    const catalogEntry =
-      this.defaultAiCatalogService.getDefaultAiCatalog()[providerName];
+    // known catalog provider supplying only an apiKey, inherit the catalog
+    // entry's npm/models/etc. so the provider actually registers instead of
+    // being silently skipped. Match the catalog case-insensitively and store
+    // under its canonical key so it works for any provider (google, openai,
+    // anthropic, …) regardless of how the name was typed. User-supplied fields
+    // take precedence.
+    const catalog = this.defaultAiCatalogService.getDefaultAiCatalog();
+    const catalogKey = Object.keys(catalog).find(
+      (key) => key.toLowerCase() === providerName.toLowerCase(),
+    );
+    const resolvedName = catalogKey ?? providerName;
+    const catalogEntry = catalogKey ? catalog[catalogKey] : undefined;
 
-    customProviders[providerName] = catalogEntry
+    customProviders[resolvedName] = catalogEntry
       ? { ...catalogEntry, ...providerConfig }
       : providerConfig;
 
