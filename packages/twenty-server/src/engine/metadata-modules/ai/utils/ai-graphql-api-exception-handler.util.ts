@@ -34,8 +34,12 @@ export const aiGraphqlApiExceptionHandler = (error: Error) => {
       case AiExceptionCode.AGENT_IS_STANDARD:
       case AiExceptionCode.ROLE_CANNOT_BE_ASSIGNED_TO_AGENTS:
         throw new ForbiddenError(error);
-      case AiExceptionCode.AGENT_EXECUTION_FAILED:
+      // Surfaced to the user: "no AI model configured" is a config problem the
+      // admin can act on, not a server bug. Mapping it to a user-facing error
+      // avoids the silent-500 symptom (see RESEARCH.md §3).
       case AiExceptionCode.API_KEY_NOT_CONFIGURED:
+        throw new UserInputError(error);
+      case AiExceptionCode.AGENT_EXECUTION_FAILED:
       case AiExceptionCode.USER_WORKSPACE_ID_NOT_FOUND:
         throw new InternalServerError(error);
       default: {

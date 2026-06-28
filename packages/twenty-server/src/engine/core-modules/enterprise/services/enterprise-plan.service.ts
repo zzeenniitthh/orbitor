@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import * as crypto from 'crypto';
 
+import { isNonEmptyString } from '@sniptt/guards';
 import { isDefined } from 'twenty-shared/utils';
 import { IsNull, Repository } from 'typeorm';
 
@@ -507,14 +508,28 @@ export class EnterprisePlanService implements OnModuleInit {
   private getPublicKeysToTry(): string[] {
     const nodeEnv = this.twentyConfigService.get('NODE_ENV');
 
+    // Orbitor fork: trust our self-signed license public key in all
+    // environments (incl. production) when configured, so we can mint our own
+    // enterprise tokens without phoning home to twenty.com. The committed
+    // upstream key constant is left untouched for clean merges.
+    const orbitorLicensePublicKey = this.twentyConfigService.get(
+      'ORBITOR_LICENSE_PUBLIC_KEY',
+    );
+
+    const keys: string[] = [ENTERPRISE_JWT_PUBLIC_KEY];
+
     if (
       nodeEnv === NodeEnvironment.DEVELOPMENT ||
       nodeEnv === NodeEnvironment.TEST
     ) {
-      return [ENTERPRISE_JWT_PUBLIC_KEY, ENTERPRISE_JWT_DEV_PUBLIC_KEY];
+      keys.push(ENTERPRISE_JWT_DEV_PUBLIC_KEY);
     }
 
-    return [ENTERPRISE_JWT_PUBLIC_KEY];
+    if (isNonEmptyString(orbitorLicensePublicKey)) {
+      keys.push(orbitorLicensePublicKey);
+    }
+
+    return keys;
   }
 
   private verifyJwt<T extends Record<string, unknown>>(

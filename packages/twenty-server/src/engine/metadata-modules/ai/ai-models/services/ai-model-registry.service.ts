@@ -402,19 +402,42 @@ export class AiModelRegistryService {
   }
 
   resolveModelForAgent(agent: { modelId: string } | null): RegisteredAiModel {
-    const aiModel = this.getEffectiveModelConfig(
-      agent?.modelId ?? AUTO_SELECT_SMART_MODEL_ID,
-    );
+    const requestedModelId = agent?.modelId ?? AUTO_SELECT_SMART_MODEL_ID;
 
-    const registeredModel = this.getModel(aiModel.modelId);
+    // getEffectiveModelConfig throws for a wholly unknown id (e.g. a stale
+    // workspace.smartModel left over after a catalog change). Treat that the
+    // same as "not registered" and fall back below rather than failing here.
+    let resolvedModelId = requestedModelId;
 
-    if (!registeredModel) {
-      throw new AiException(
-        `Model ${aiModel.modelId} not found in registry. Check that the corresponding AI provider is configured.`,
-        AiExceptionCode.API_KEY_NOT_CONFIGURED,
-      );
+    try {
+      resolvedModelId = this.getEffectiveModelConfig(requestedModelId).modelId;
+    } catch {
+      resolvedModelId = requestedModelId;
     }
 
-    return registeredModel;
+    const registeredModel = this.getModel(resolvedModelId);
+
+    if (registeredModel) {
+      return registeredModel;
+    }
+
+    // Orbitor: the configured model is not in the registry. As long as some
+    // provider is configured, fall back to any available model instead of
+    // failing the whole chat (a stale smartModel id shouldn't break AI). Only
+    // error when there is genuinely no usable model at all.
+    const fallbackModel = this.getAvailableModels()[0];
+
+    if (fallbackModel) {
+      this.logger.warn(
+        `Model ${resolvedModelId} not found in registry; falling back to ${fallbackModel.modelId}.`,
+      );
+
+      return fallbackModel;
+    }
+
+    throw new AiException(
+      `Model ${resolvedModelId} not found in registry. Check that the corresponding AI provider is configured.`,
+      AiExceptionCode.API_KEY_NOT_CONFIGURED,
+    );
   }
 }

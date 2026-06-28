@@ -1,3 +1,16 @@
+# Orbitor — run locally
+
+```bash
+bash packages/twenty-utils/setup-dev-env.sh   # starts local Postgres + Redis, inits the DB
+yarn start                                     # frontend :3001, server :3000, worker
+```
+
+- AI chat: set `GOOGLE_API_KEY` in `packages/twenty-server/.env` (after running setup — it resets `.env`).
+- Before pushing: `npx nx typecheck twenty-server` and `npx nx lint:diff-with-main twenty-server`.
+- Deploy flow: local → staging → prod. Never push straight to `main` (= production).
+
+---
+
 <p align="center">
   <a href="https://www.twenty.com">
     <img src="./packages/twenty-website/public/images/core/logo.svg" width="100px" alt="Twenty logo" />

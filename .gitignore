@@ -4,6 +4,9 @@
 .claude/*
 !.claude/settings.json
 .cursor/debug-*.log
+.cursor/skills/
+.cursor/skills-archive/
+.grok/
 **/**/node_modules/
 .cache
 

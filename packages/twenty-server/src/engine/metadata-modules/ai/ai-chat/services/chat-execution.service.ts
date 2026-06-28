@@ -407,6 +407,29 @@ export class ChatExecutionService {
       stopWhen: (step) =>
         stepCountIs(AGENT_CONFIG.MAX_STEPS)(step) || hasNoMoreAvailableCredits,
       experimental_telemetry: AI_TELEMETRY_CONFIG,
+      // streamText does NOT throw on upstream failure — without this callback
+      // the error is swallowed and the chat silently produces nothing (AI SDK
+      // "streamText fails silently", RESEARCH.md §5.1). Log + capture so the
+      // real provider error is diagnosable server-side. The client is still
+      // notified via toUIMessageStream's onError → stream-error event in
+      // stream-agent-chat.job.ts.
+      onError: ({ error }) => {
+        this.logger.error(
+          `[AI_CHAT_STREAM_ERROR] streamText failed for model ${registeredModel.modelId}: ${
+            error instanceof Error
+              ? `${error.name}: ${error.message}`
+              : String(error)
+          }`,
+        );
+
+        if (error instanceof Error && isDefined(error.stack)) {
+          this.logger.error(`[AI_CHAT_STREAM_ERROR] stack: ${error.stack}`);
+        }
+
+        this.exceptionHandlerService.captureExceptions([
+          error instanceof Error ? error : new Error(String(error)),
+        ]);
+      },
       providerOptions: getCallLevelCacheProviderOptions(
         registeredModel.sdkPackage,
       ),
