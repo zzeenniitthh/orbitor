@@ -1646,6 +1646,16 @@ export class ConfigVariables {
   ENTERPRISE_KEY: string;
 
   @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    isSensitive: false,
+    description:
+      'Orbitor self-issued license public key (PEM). When set, it is trusted to verify enterprise validity tokens in all environments.',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  ORBITOR_LICENSE_PUBLIC_KEY?: string;
+
+  @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.ADVANCED_SETTINGS,
     isSensitive: true,
     description:

@@ -91,6 +91,18 @@ export class TwentyConfigService {
     await this.databaseConfigDriver.update(key, value);
   }
 
+  // Reloads all database-backed config into the in-memory cache on demand.
+  // Processes that don't run the refresh cron (e.g. the queue worker, where
+  // cron registration is disabled) would otherwise keep the config snapshot
+  // they loaded at boot — so an admin-panel change (like an AI provider key)
+  // would never reach them. Callers in such processes invoke this right before
+  // reading config that may have changed. No-op when the DB driver is inactive.
+  async refreshConfigFromDatabase(): Promise<void> {
+    if (this.isDatabaseDriverActive) {
+      await this.databaseConfigDriver.refreshAllCache();
+    }
+  }
+
   getMetadata(
     key: keyof ConfigVariables,
   ): ConfigVariablesMetadataOptions | undefined {

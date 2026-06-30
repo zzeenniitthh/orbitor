@@ -16,6 +16,7 @@ import { WorkspaceScopedRepository } from 'src/engine/twenty-orm/workspace-scope
 import { Process } from 'src/engine/core-modules/message-queue/decorators/process.decorator';
 import { Processor } from 'src/engine/core-modules/message-queue/decorators/processor.decorator';
 import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { toDisplayCredits } from 'src/engine/core-modules/usage/utils/to-display-credits.util';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { AgentMessageRole } from 'src/engine/metadata-modules/ai/ai-agent-execution/entities/agent-message.entity';
@@ -50,10 +51,17 @@ export class StreamAgentChatJob {
     private readonly eventPublisherService: AgentChatEventPublisherService,
     private readonly cancelSubscriberService: AgentChatCancelSubscriberService,
     private readonly agentChatStreamingService: AgentChatStreamingService,
+    private readonly twentyConfigService: TwentyConfigService,
   ) {}
 
   @Process(STREAM_AGENT_CHAT_JOB_NAME)
   async handle(data: StreamAgentChatJobData): Promise<void> {
+    // The worker disables cron registration, so its config cache is frozen at
+    // boot and never picks up admin-panel changes (e.g. an AI provider key
+    // added after startup). Reload DB-backed config here so the in-app key is
+    // visible to the model registry before we resolve the model for this turn.
+    await this.twentyConfigService.refreshConfigFromDatabase();
+
     const workspace = await this.workspaceRepository.findOne({
       where: { id: data.workspaceId },
     });
